@@ -76,8 +76,17 @@ class QMA_Term
 
 end
 
-t = QMA_Term.new(3, 6, [0])
+5.times do |x|
+	input = gets.chomp.split(',')
+	input = input.take(input.length - 1)
 
-puts t.get_array
+	length = (x <= 2) ? 3 : 4
 
-puts t.print_logic
+	input.each_index do |x|
+		input[x] = QMA_Term.new(length, input[x].to_i, [])
+	end
+
+	input.each do |x|
+		puts x.print_logic
+	end
+end
