@@ -2,7 +2,7 @@
 class QMA_Term
 	@array
 	@number
-	@uses
+	attr_accessor :uses
 	@x_locs
 	@@letter_hash = {0 => "a", 1 => "b", 2 => "c", 3 => "d"}
 
@@ -38,15 +38,16 @@ class QMA_Term
 	def usable (term)
 		differences = []
 		@array.length.times do |x|
-			if (@array[x] != term[x])
-				differnces << x
+			if (@array[x] != term.get_array[x])
+				differences << x
 			end
 		end
 		if differences.length > 1
 			nil
 		else
-			uses += 1
-			Term.new(@array.length, @number, differences + @x_locs)
+			@uses += 1
+			term.uses += 1
+			QMA_Term.new(@array.length, @number, differences + @x_locs)
 		end
 	end
 
@@ -58,6 +59,8 @@ class QMA_Term
 				i += 1
 			end
 		end
+
+		i
 	end
 
 	# output the logical expression
@@ -77,6 +80,7 @@ class QMA_Term
 end
 
 5.times do |x|
+	puts ((x + 1).to_s + ".\n-----")
 	input = gets.chomp.split(',')
 	input = input.take(input.length - 1)
 
@@ -86,7 +90,65 @@ end
 		input[x] = QMA_Term.new(length, input[x].to_i, [])
 	end
 
-	input.each do |x|
-		puts x.print_logic
+	input.sort! do |x, y|
+		x.index <=> y.index
 	end
+
+	simplified = []
+
+	(length + 1).times do
+		simplified << Array.new()
+	end
+
+	input.each do |x|
+		simplified[x.index] << x
+	end
+
+	extended_simplified = []
+
+	(length).times do
+		extended_simplified << Array.new()
+	end
+
+	(simplified.length - 1).times do |x|
+		simplified[x].each do |y|
+			simplified[x + 1].each do |z|
+				zz = y.usable(z)
+				if (zz)
+					extended_simplified[zz.index] << zz
+				end
+			end
+		end
+	end
+
+	final = []
+
+	(extended_simplified.length).times do |x|
+		extended_simplified[x].each do |y|
+			if (x < extended_simplified.length - 1)
+				extended_simplified[x + 1].each do |z|
+					zz = y.usable(z)
+					if (zz)
+						final << zz
+					end
+				end
+			end
+			if(y.uses == 0)
+				final << y
+			end
+		end
+	end
+
+	final.uniq! do |x|
+		x.print_logic
+	end
+
+	puts ((x + 1).to_s + ".\n-----")
+	final.each_index do |x|
+		if (x > 0)
+			print (" + ")
+		end
+		print final[x].print_logic
+	end
+	print ("\n")
 end
